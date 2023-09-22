@@ -2,6 +2,9 @@ import { useEffect, useRef } from "react";
 import { BackHandler, Platform } from "react-native";
 import WebView from "react-native-webview";
 
+import { STAGING_URL } from "../constants/sources";
+import { DISABLE_ZOOMING } from "../constants/injectables";
+
 export default function EntryPoint() {
   const webViewRef = useRef(null);
 
@@ -25,13 +28,11 @@ export default function EntryPoint() {
     }
   }, []);
 
-  const DISABLE_ZOOMING_JS = `const meta = document.createElement('meta'); meta.setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0'); meta.setAttribute('name', 'viewport'); document.getElementsByTagName('head')[0].appendChild(meta); `;
-
   return (
     <WebView
       ref={webViewRef}
-      source={{ uri: "https://telehealth-staging.vercel.app" }}
-      injectedJavaScript={DISABLE_ZOOMING_JS}
+      source={{ uri: STAGING_URL }}
+      injectedJavaScript={DISABLE_ZOOMING}
     />
   );
 }
