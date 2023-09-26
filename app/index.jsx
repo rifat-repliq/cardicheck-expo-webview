@@ -8,13 +8,14 @@ import { DISABLE_ZOOMING } from "../constants/injectables";
 
 export default function EntryPoint() {
   const webViewRef = useRef(null);
-  const [isInRootPage, setIsInRootPage] = useState(false);
+
+  const [isInEntryPage, setIsInEntryPage] = useState(false);
 
   function handleNavigationStateChange(state) {
-    if (state.url === STAGING_URL) {
-      setIsInRootPage(true);
+    if (!state.canGoBack) {
+      setIsInEntryPage(true);
     } else {
-      setIsInRootPage(false);
+      setIsInEntryPage(false);
     }
   }
 
@@ -23,6 +24,7 @@ export default function EntryPoint() {
       webViewRef.current.goBack();
       return true;
     };
+
     const exitApp = () => {
       Alert.alert("Hold on!", "Are you sure want to exit the app?", [
         {
@@ -37,11 +39,11 @@ export default function EntryPoint() {
 
     const backHandler = BackHandler.addEventListener(
       "hardwareBackPress",
-      isInRootPage ? exitApp : goBack
+      isInEntryPage ? exitApp : goBack
     );
 
     return () => backHandler.remove();
-  }, [isInRootPage]);
+  }, [isInEntryPage]);
 
   return (
     <WebView
