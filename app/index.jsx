@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { Alert, BackHandler } from "react-native";
+import { Alert, BackHandler, Text, View } from "react-native";
+import { Camera } from "expo-camera";
 import WebView from "react-native-webview";
-import Spinner from "../components/shared/Spinner";
 
 import { STAGING_URL } from "../constants/sources";
 import { DISABLE_ZOOMING } from "../constants/injectables";
+
+import Spinner from "../components/shared/Spinner";
 
 export default function EntryPoint() {
   const webViewRef = useRef(null);
@@ -45,17 +47,41 @@ export default function EntryPoint() {
     return () => backHandler.remove();
   }, [isInEntryPage]);
 
-  return (
-    <WebView
-      ref={webViewRef}
-      source={{ uri: STAGING_URL }}
-      onNavigationStateChange={handleNavigationStateChange}
-      injectedJavaScript={DISABLE_ZOOMING}
-      originWhitelist={["*"]}
-      allowsInlineMediaPlayback
-      mediaPlaybackRequiresUserAction={false}
-      startInLoadingState={true}
-      renderLoading={Spinner}
-    />
-  );
+  const [hasPermission, setHasPermission] = useState(null);
+
+  useEffect(() => {
+    async function requestPermissions() {
+      const { status: cameraStatus } =
+        await Camera.requestCameraPermissionsAsync();
+      const { status: micStatus } =
+        await Camera.requestMicrophonePermissionsAsync();
+      setHasPermission(cameraStatus === "granted" && micStatus === "granted");
+    }
+
+    requestPermissions();
+  }, []);
+
+  if (!hasPermission) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text>Camera and Microphone permission is Required!</Text>
+      </View>
+    );
+  }
+
+  if (hasPermission) {
+    return (
+      <WebView
+        ref={webViewRef}
+        source={{ uri: STAGING_URL }}
+        onNavigationStateChange={handleNavigationStateChange}
+        injectedJavaScript={DISABLE_ZOOMING}
+        originWhitelist={["*"]}
+        allowsInlineMediaPlayback
+        mediaPlaybackRequiresUserAction={false}
+        startInLoadingState={true}
+        renderLoading={Spinner}
+      />
+    );
+  }
 }
