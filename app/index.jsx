@@ -61,6 +61,14 @@ export default function EntryPoint() {
     requestPermissions();
   }, []);
 
+  if (hasPermission === null) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text>Checking required permissions...</Text>
+      </View>
+    );
+  }
+
   if (!hasPermission) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
