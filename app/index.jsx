@@ -89,6 +89,7 @@ export default function EntryPoint() {
         mediaPlaybackRequiresUserAction={false}
         startInLoadingState={true}
         renderLoading={Spinner}
+        onError={(error) => console.error("WebView Error:", error)}
       />
     );
   }
