@@ -62,11 +62,7 @@ export default function EntryPoint() {
   }, []);
 
   if (hasPermission === null) {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text>Checking required permissions...</Text>
-      </View>
-    );
+    return <Spinner />;
   }
 
   if (!hasPermission) {
