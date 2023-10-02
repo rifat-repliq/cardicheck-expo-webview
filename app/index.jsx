@@ -2,15 +2,29 @@ import { useEffect, useRef, useState } from "react";
 import { Alert, BackHandler, Text, View } from "react-native";
 import { Camera } from "expo-camera";
 import WebView from "react-native-webview";
+import NetInfo from "@react-native-community/netinfo";
 
 import { STAGING_URL } from "../constants/sources";
 import { DISABLE_ZOOMING } from "../constants/injectables";
 
 import Spinner from "../components/shared/Spinner";
+import NoInternetModal from "../components/shared/NoInternetModal";
 
 export default function EntryPoint() {
   const webViewRef = useRef(null);
 
+  // Check for internet connectivity
+  const [isConnected, setIsConnected] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener((state) => {
+      setIsConnected(state.isConnected);
+    });
+
+    return () => unsubscribe();
+  }, [isConnected]);
+
+  // Handle navigation
   const [isInEntryPage, setIsInEntryPage] = useState(false);
 
   function handleNavigationStateChange(state) {
@@ -47,6 +61,7 @@ export default function EntryPoint() {
     return () => backHandler.remove();
   }, [isInEntryPage]);
 
+  // Check for required permissions
   const [hasPermission, setHasPermission] = useState(null);
 
   useEffect(() => {
@@ -61,6 +76,7 @@ export default function EntryPoint() {
     requestPermissions();
   }, []);
 
+  // Rendering
   if (hasPermission === null) {
     return <Spinner />;
   }
@@ -75,18 +91,23 @@ export default function EntryPoint() {
 
   if (hasPermission) {
     return (
-      <WebView
-        ref={webViewRef}
-        source={{ uri: STAGING_URL }}
-        onNavigationStateChange={handleNavigationStateChange}
-        injectedJavaScript={DISABLE_ZOOMING}
-        originWhitelist={["*"]}
-        allowsInlineMediaPlayback
-        mediaPlaybackRequiresUserAction={false}
-        startInLoadingState={true}
-        renderLoading={Spinner}
-        onError={(error) => console.error("WebView Error:", error)}
-      />
+      <View style={{ flex: 1 }}>
+        <WebView
+          ref={webViewRef}
+          source={{ uri: STAGING_URL }}
+          onNavigationStateChange={handleNavigationStateChange}
+          injectedJavaScript={DISABLE_ZOOMING}
+          originWhitelist={["*"]}
+          allowsInlineMediaPlayback
+          mediaPlaybackRequiresUserAction={false}
+          startInLoadingState={true}
+          renderLoading={Spinner}
+          onError={(error) => console.error("WebView Error:", error)}
+        />
+
+        {/* NO INTERNET */}
+        <NoInternetModal visible={!isConnected} />
+      </View>
     );
   }
 }
